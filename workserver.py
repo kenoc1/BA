@@ -43,7 +43,7 @@ def update_activity():
     mem_available = psutil.virtual_memory().available * 100 / psutil.virtual_memory().total
     
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=get_activity, trigger="interval", seconds=60)
+scheduler.add_job(func=update_activity, trigger="interval", seconds=1)
 scheduler.start()
 
 # Shut down the scheduler when exiting the app
