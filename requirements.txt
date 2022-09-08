@@ -1,3 +1,2 @@
 psutil
-APScheduler
 bottle
