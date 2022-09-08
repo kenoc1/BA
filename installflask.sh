@@ -5,7 +5,9 @@ cp app.py $workserver_path
 
 # install python3-bottle 
 apt-get -y update
-apt-get -y install python3-flask
+apt-get -y install python3-pip
+pip3 install -r requirements.txt
+# apt-get -y install python3-flask
 # apt-get -y install python3-bottle
 # apt-get -y install python3-psutil
 
