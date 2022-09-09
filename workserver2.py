@@ -6,14 +6,20 @@ import socket
 import threading
 import time
 import psutil
+from apscheduler.schedulers.background import BackgroundScheduler
 from bottle import route, run
+import atexit
 
 # for STD SLB we listen on all addresses
 hostname = "0.0.0.0"
 #hostname = socket.gethostname()
-hostport = 80
+hostport = 3000
 keepworking = False  # boolean to switch worker thread on or off
 
+cpu_load = 0
+mem = 0
+mem_load = 0
+mem_available = 0
 
 # thread which maximizes CPU usage while the keepWorking global is True
 def workerthread():
@@ -30,25 +36,34 @@ def workerthread():
 worker_thread = threading.Thread(target=workerthread, args=())
 worker_thread.start()
 
+def update_activity():
+    global cpu_load
+    global mem
+    global mem_load
+    global mem_available
+    cpu_load = psutil.cpu_percent()
+    mem = psutil.virtual_memory().used
+    mem_load = psutil.virtual_memory().percent
+    mem_available = psutil.virtual_memory().available * 100 / psutil.virtual_memory().total
+    
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=update_activity, trigger="interval", seconds=1)
+scheduler.start()
+
+# Shut down the scheduler when exiting the app
+atexit.register(lambda: scheduler.shutdown())
 
 def writebody():
     body = '<html><head><title>Work interface - build</title></head>'
-    body += '<body><h2>Worker interface on ' + \
-        socket.gethostname() + '</h2><ul><h3>'
+    body += '<body><h2>Worker interface on ' + socket.gethostname() + '</h2><ul><h3>'
 
     if keepworking == False:
         body += '<br/>Worker thread is not running. <a href="./do_work">Start work</a><br/>'
     else:
         body += '<br/>Worker thread is running. <a href="./stop_work">Stop work</a><br/>'
 
-    cpu_load = psutil.cpu_percent()
-    mem = psutil.virtual_memory().used
-    mem_load = psutil.virtual_memory().percent
-    mem_available = psutil.virtual_memory().available * 100 / \
-        psutil.virtual_memory().total
-
-    body += '<br/>Activity Monitor:<br/>/CPU = ' + str(cpu_load) + '<br/>/MEM = ' + str(
-        mem) + '<br/>/MEM (load) = ' + str(mem_load) + '<br/>/MEM (available) = ' + str(mem_available) + '<br/>'
+    body += '<br/>Activity Monitor:<br/>/CPU = ' + str(cpu_load) + '<br/>/MEM = ' + str(mem) + '<br/>/MEM (load) = ' + str(mem_load) + '<br/>/MEM (available) = ' + str(mem_available) + '<br/>'
     body += '<br/>Usage:<br/><br/>/do_work = start worker thread<br/>/stop_work = stop worker thread<br/>'
     body += '</h3></ul></body></html>'
     return body
