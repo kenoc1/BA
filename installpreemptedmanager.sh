@@ -1,3 +1,5 @@
+scale_up_endpoint="https://vmss-scaler.azurewebsites.net/api/httpscaleuptrigger"
+
 preempted_event_manager_dir=/srv/preemptedeventmanager/
 preempted_event_manager=$preempted_event_manager_dir'check-preemt-events.sh'
 mkdir $preempted_event_manager_dir
