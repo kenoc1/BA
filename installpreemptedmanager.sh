@@ -1,6 +1,6 @@
-#!/bin/bash
-# scale_up_endpoint="https://vmss-scaler.azurewebsites.net/api/httpscaleuptrigger"
-preempted_event_manager=/srv/preemptedeventmanager/check-preemt-events.sh
+preempted_event_manager_dir=/srv/preemptedeventmanager/
+preempted_event_manager=$preempted_event_manager_dir'check-preemt-events.sh'
+mkdir $preempted_event_manager_dir
 touch $preempted_event_manager
 
 printf 'REQ=$(curl -H Metadata:true http://169.254.169.254/metadata/scheduledevents?api-version=2020-07-01)\n\n' >> $preempted_event_manager
